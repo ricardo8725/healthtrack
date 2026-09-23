@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run Tests on lib Save",
+      "trigger": "PostFileSave",
+      "description": "Runs npm run test automatically whenever a .ts file inside src/lib/ is saved.",
+      "matcher": "src/lib/.*\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "npm run test",
+        "timeout": 60
+      }
+    }
+  ]
+}
