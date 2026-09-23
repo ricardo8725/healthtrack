@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "healthtrack-health-import": {
+      "command": "node",
+      "args": [
+        "<ABSOLUTE_PATH_TO_REPO>/mcp-servers/health-import/dist/index.js"
+      ],
+      "env": {},
+      "disabled": false
+    }
+  },
+  "powers": {
+    "mcpServers": {
+      "power-terraform-terraform": {
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "hashicorp/terraform-mcp-server"
+        ],
+        "env": {},
+        "disabled": false
+      },
+      "power-checkmarx-checkmarx": {
+        "url": "<CHECKMARX_BASE_URL>/api/security-mcp/mcp",
+        "headers": {
+          "cx-origin": "Kiro",
+          "Authorization": "<CHECKMARX_API_KEY>"
+        }
+      }
+    }
+  }
+}

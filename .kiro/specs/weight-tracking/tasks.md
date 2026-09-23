@@ -20,9 +20,9 @@
   npm install zod react-hook-form @hookform/resolvers
   ```
 
-- [ ] **T-02** Instalar y configurar Vitest.
+- [ ] **T-02** Instalar y configurar Vitest y fast-check.
   ```bash
-  npm install -D vitest @vitejs/plugin-react
+  npm install -D vitest @vitejs/plugin-react fast-check
   ```
   Crear `vitest.config.ts`:
   ```ts
@@ -84,7 +84,7 @@
 - [ ] **T-08** Crear `src/domain/bmi.ts` con `calculateBMI(weightKg, heightCm)` y `classifyBMI`.
   _Ver implementación completa en design.md._
 
-- [ ] **T-09** Escribir `src/domain/bmi.test.ts` con Vitest.
+- [ ] **T-09** Escribir `src/domain/bmi.test.ts` con Vitest (tests unitarios de casos concretos).
   Casos a cubrir:
   - Resultado correcto para una persona de 70 kg / 175 cm → IMC 22.86, `'normal'`.
   - Límite inferior de `'underweight'`: IMC < 18.5.
@@ -93,6 +93,20 @@
   - Precisión de 2 decimales.
   - `RangeError` con `weightKg <= 0`.
   - `RangeError` con `heightCm <= 0`.
+
+- [x] **T-09b** Escribir `src/domain/bmi.property.test.ts` con Vitest + fast-check (property-based tests).
+  Propiedades cubiertas (cientos de casos aleatorios por cada una):
+  1. **Positividad** — IMC > 0 para toda entrada válida.
+  2. **Precisión (RNF-01)** — valor ≤ 2 decimales; error de redondeo < 0.005.
+  3. **Corrección de fórmula (RF-03)** — coincide con `weight / (height_m)²`.
+  4. **Monotonía en peso** — más peso → IMC no decrece (misma altura).
+  5. **Monotonía en altura** — más altura → IMC no crece (mismo peso).
+  6. **Clasificación WHO (RF-04)** — categoría coincide con umbrales; underweight y obese cubiertos con generadores dirigidos.
+  7. **Escala cuadrática** — escalar peso×k² y altura×k preserva el IMC (±0.01 por redondeo).
+  8. **Rechazo de entradas inválidas** — `RangeError` para peso ≤ 0 y altura ≤ 0.
+  9. **Universo de categorías** — ninguna entrada produce una categoría fuera del enum RF-04.
+  
+  Dependencia extra: `npm install -D fast-check`
 
 ---
 

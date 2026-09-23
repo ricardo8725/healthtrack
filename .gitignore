@@ -1,0 +1,32 @@
+# Base de datos local
+healthtrack.db
+healthtrack.db-shm
+healthtrack.db-wal
+
+# Variables de entorno y secretos
+.env
+.env.local
+.env.*.local
+
+# Kiro — configuración con credenciales (usar mcp.json.example como plantilla)
+.kiro/settings/mcp.json
+
+# Next.js
+.next/
+out/
+
+# Dependencias
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+.vscode/settings.json
