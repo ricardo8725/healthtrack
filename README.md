@@ -1,147 +1,188 @@
 # HealthTrack
 
-> Personal health control app: weight, medical exams, medications, BMI, exercise —
-> with future integration to Apple Health and Garmin.
+> Personal health tracking web app: register your weight, get your BMI calculated and
+> classified automatically, and review your history over time. First feature of a broader
+> health platform (medical exams, medications, exercise, and future Apple Health / Garmin sync).
 >
-> Built entirely with [Kiro](https://kiro.dev) as part of the **Kiro University Challenge**.
+> Built entirely with [Kiro](https://kiro.dev) for the **Kiro University Challenge 2026**.
 
 ---
 
-## Kiro University Challenge — Progress
+## 🚀 Quick start (for reviewers)
 
-| Lesson | Evidence | Status |
+**Requirements:** Node.js ≥ 18 (developed on Node 20+) and npm.
+
+```bash
+# 1. Clone and enter the repo
+git clone https://github.com/ricardo8725/healthtrack
+cd healthtrack
+
+# 2. Install dependencies
+npm install
+
+# 3. Create the local SQLite database (applies migrations)
+npm run db:migrate
+
+# 4. Start the app
+npm run dev
+```
+
+Open **http://localhost:3000** — you'll be redirected to the weight history.
+
+To run the automated tests:
+
+```bash
+npm test        # 22 tests: 9 unit + 13 property-based (fast-check)
+```
+
+To produce a production build:
+
+```bash
+npm run build   # compiles, type-checks, and lints all routes
+```
+
+---
+
+## ✅ How to validate the app works
+
+The app implements a full CRUD flow for weight + BMI tracking. Follow this path in the browser:
+
+1. **Set up your profile (RF-01)** — the home page shows an empty history with a banner
+   prompting you to complete your profile. Click **Perfil**, enter a height (e.g. `175`)
+   and date of birth, then **Guardar perfil**.
+   - _Validation check:_ try height `0` or empty → it shows an inline error and won't save.
+
+2. **Register a weight (RF-02, RF-03, RF-04)** — click **Nueva entrada**. Type a weight
+   (e.g. `80`) and watch the **BMI compute live** with its color-coded category badge
+   *before* you save.
+   - _Validation check:_ enter `900` → rejected with "El peso no puede superar 700 kg".
+
+3. **View history (RF-05)** — after saving you land on `/weight`, a table sorted by date
+   descending: Date · Weight · BMI · Category · Actions. Add several entries to see the
+   category colors change (underweight / normal / overweight / obese).
+
+4. **Edit an entry (RF-06)** — click **Editar** on any row, change the weight, save.
+   The BMI and category **recalculate automatically**.
+
+5. **Delete an entry (RF-07)** — click **Eliminar**. A confirmation dialog appears;
+   **Cancelar** keeps it, **Eliminar** removes it. (Press **Escape** to close — accessible dialog.)
+
+The API layer can also be validated directly:
+
+```bash
+# Create a profile
+curl -X PUT http://localhost:3000/api/profile \
+  -H "Content-Type: application/json" \
+  -d '{"heightCm":175,"dateOfBirth":"1990-04-15"}'
+
+# Create a weight entry — BMI is calculated server-side
+curl -X POST http://localhost:3000/api/weight \
+  -H "Content-Type: application/json" \
+  -d '{"date":"2026-09-20","weightKg":80}'
+
+# List history
+curl http://localhost:3000/api/weight
+```
+
+---
+
+## 🎓 Kiro University Challenge — lesson evidence
+
+| Lesson | Evidence in the repo | Status |
 |---|---|---|
-| 1. Specs | `.kiro/specs/weight-tracking/` — requirements, design, tasks | ✅ |
+| 1. Specs | `.kiro/specs/weight-tracking/` — requirements (EARS), design, tasks, progress-log | ✅ |
 | 2. Steering | `.kiro/steering/` — product, tech, structure, tooling | ✅ |
-| 3. Hooks | `.kiro/hooks/test-on-lib-save.json` — runs `npm test` on every `src/lib/*.ts` save | ✅ |
-| 4. Property-based testing | `src/domain/bmi.property.test.ts` — 9 invariants, fast-check + Vitest | ✅ |
-| 5. Powers | `mcp.json.example` — Terraform (Docker) + Checkmarx MCP servers configured under `"powers"` | ✅ |
+| 3. Hooks | `.kiro/hooks/test-on-lib-save.json` — runs `npm test` on `src/lib/*.ts` save | ✅ |
+| 4. Property-based testing | `src/domain/bmi.property.test.ts` — 13 invariants (fast-check + Vitest) | ✅ |
+| 5. Powers | `.kiro/settings/mcp.json.example` — Terraform + Checkmarx configured under `"powers"` | ✅ |
 | 6. MCP | `mcp-servers/health-import/` — local MCP server with 3 tools, connected to Kiro | ✅ |
-| 7. Custom agents | `.kiro/agents/health-data-importer.md` — scoped import agent with validation rules | ✅ |
-| Bonus 1 (Cloud) | Commits by `kiro-agent` author — evidence of a cloud session writing to the repo | ✅ |
-| Bonus 2 (Package a Power) | [`power-health-data-integration`](https://github.com/ricardo8725/power-health-data-integration) — submitted to Kiro Power registry | ✅ |
+| 7. Custom agents | `.kiro/agents/health-data-importer.md` — scoped import agent with validation | ✅ |
+| Bonus 1 (Cloud) | Commits authored by `kiro-agent` — a cloud session writing to the repo | ✅ |
+| Bonus 2 (Package a Power) | [`power-health-data-integration`](https://github.com/ricardo8725/power-health-data-integration) — published as a standalone Kiro Power | ✅ |
 
 ---
 
-## Why Terraform and Checkmarx Powers?
+## 🧩 Tech stack
 
-The two IDE-installed Powers (Lesson 5) were chosen intentionally for HealthTrack's
-production path:
+- **Next.js 14** (App Router) + **TypeScript**
+- **SQLite** via `better-sqlite3` + **Drizzle ORM** (migrations)
+- **Zod** — validation schemas shared between API routes and client forms
+- **React Hook Form** — client-side forms with the same Zod schemas
+- **Tailwind CSS** — styling
+- **Vitest** + **fast-check** — unit and property-based tests
 
-- **Checkmarx** — used to scan the HealthTrack codebase for vulnerabilities (SAST),
-  secret detection, and IaC issues. Health apps handle sensitive personal data,
-  so security scanning from day one is non-negotiable.
-- **Terraform** — infrastructure-as-code ready for when HealthTrack moves from local
-  SQLite to a cloud deployment (Neon Postgres, AWS, etc.). The Power is configured but
-  disabled until a cloud target is defined.
-
-Neither requires real credentials to demonstrate the configuration — the `mcp.json.example`
-documents both with placeholders.
+Full architecture in `.kiro/specs/weight-tracking/design.md`.
 
 ---
 
-## MCP Server — health-import
+## 🗺️ Feature status
 
-The `mcp-servers/health-import/` server runs **locally with no credentials**.
-
-```bash
-# Build
-cd mcp-servers/health-import
-npm install && npm run build
-
-# Smoke test
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.1"}}}' \
-  | node dist/index.js
-# Expected: ✅ health-import MCP server running via stdio
-#           {"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{"listChanged":true}},...}}
-
-# Test list_sample_records
-echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_sample_records","arguments":{}}}' \
-  | node dist/index.js
-```
-
-To connect it to Kiro, add this to `~/.kiro/settings/mcp.json`
-(copy from `.kiro/settings/mcp.json.example` and replace the path):
-
-```json
-{
-  "mcpServers": {
-    "healthtrack-health-import": {
-      "command": "node",
-      "args": ["/absolute/path/to/healthtrack/mcp-servers/health-import/dist/index.js"],
-      "env": {},
-      "disabled": false
-    }
-  }
-}
-```
-
-> The Terraform and Checkmarx powers require Docker and a Checkmarx One account
-> respectively. They are **optional** — the rest of the project works without them.
+| Module | Status |
+|---|---|
+| **Weight & BMI tracking** | ✅ Implemented (this feature — full CRUD, tests, validation) |
+| Medical exams | Planned |
+| Medications | Planned |
+| Exercise | Planned |
+| Apple Health / Garmin sync | Future (pattern demonstrated via the MCP server) |
 
 ---
 
-## Running tests (Lesson 4 — Property-based testing)
-
-The property-based tests for `calculateBMI` use [fast-check](https://fast-check.dev/)
-and Vitest. Once the main project is initialized:
-
-```bash
-npm install          # installs vitest and fast-check
-npm test             # runs bmi.property.test.ts — 9 properties, ~900 random cases
-```
-
-The test hook (Lesson 3) fires automatically when any `src/lib/*.ts` file is saved
-in Kiro, running `npm test` immediately.
-
----
-
-## Custom agent — health-data-importer (Lesson 7)
-
-The agent at `.kiro/agents/health-data-importer.md` is scoped exclusively to importing
-health records from the MCP server. To activate it:
-
-1. Click the agent selector icon in the Kiro chat input
-2. Select **health-data-importer**
-3. Ask: _"Import all weight records from the MCP server"_
-
-The agent will query the MCP tools, validate every record against physiological ranges,
-and report valid vs. rejected records explicitly — never silently.
-
----
-
-## Project structure
+## 📁 Project structure
 
 ```
 healthtrack/
 ├── .kiro/
-│   ├── agents/          # Custom agents (Lesson 7)
-│   ├── hooks/           # Automation hooks (Lesson 3)
-│   ├── settings/        # mcp.json.example (Lesson 5 & 6)
-│   ├── specs/           # Feature specs (Lesson 1)
-│   └── steering/        # Always-on context files (Lesson 2)
+│   ├── agents/          # Custom agent: health-data-importer (Lesson 7)
+│   ├── hooks/           # test-on-lib-save (Lesson 3)
+│   ├── settings/        # mcp.json.example — Powers + MCP (Lessons 5 & 6)
+│   ├── specs/           # weight-tracking spec: requirements/design/tasks (Lesson 1)
+│   └── steering/        # product, tech, structure, tooling (Lesson 2)
 ├── mcp-servers/
-│   └── health-import/   # Local MCP server (Lesson 6)
+│   └── health-import/   # Local MCP server, 3 tools, synthetic data (Lesson 6)
 ├── powers/
-│   └── health-data-integration/  # Packaged Power (Bonus 2)
-│       → published at github.com/ricardo8725/power-health-data-integration
+│   └── health-data-integration/   # Packaged Kiro Power (Bonus 2)
 └── src/
-    └── domain/
-        └── bmi.property.test.ts  # Property-based tests (Lesson 4)
+    ├── app/             # Next.js App Router: pages + API routes
+    │   ├── api/         # /api/profile, /api/weight, /api/weight/[id]
+    │   ├── profile/     # profile page
+    │   └── weight/      # history, new entry, edit entry
+    ├── components/      # BMICategoryBadge, forms, history table, delete dialog
+    ├── db/              # Drizzle schema, singleton connection, migrations
+    ├── domain/          # calculateBMI (pure) + unit & property tests
+    ├── lib/             # repositories, constants, BMI labels (i18n-ready)
+    ├── schemas/         # Zod schemas
+    └── scripts/         # seed.ts (1000-row performance check)
 ```
 
 ---
 
-## Tech stack (planned — spec complete, implementation next)
+## 🔌 MCP server — health-import (Lesson 6)
 
-- **Next.js 14** (App Router) + TypeScript
-- **SQLite** via `better-sqlite3` + **Drizzle ORM**
-- **Zod** — shared validation schemas (API + client)
-- **React Hook Form** — client-side forms
-- **Tailwind CSS** — styling
-- **Vitest** + **fast-check** — unit + property-based tests
+A local MCP server that simulates an external health data source (Apple Health / Garmin)
+with **synthetic, fictitious data** — no real health records, no credentials.
 
-See `.kiro/specs/weight-tracking/design.md` for the full architecture.
+```bash
+cd mcp-servers/health-import
+npm install && npm run build
+
+# Smoke test the MCP handshake
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.1"}}}' \
+  | node dist/index.js
+```
+
+To connect it in Kiro, copy `.kiro/settings/mcp.json.example` to `~/.kiro/settings/mcp.json`
+and replace `<ABSOLUTE_PATH_TO_REPO>` with your local path. See `.kiro/steering/tooling.md` for details.
+
+> The Terraform and Checkmarx Powers (Lesson 5) require Docker and a Checkmarx One account
+> respectively — they are **optional** and not needed to run or validate the app.
+
+---
+
+## 🔒 Privacy & data safety
+
+- The local database (`healthtrack.db`) is gitignored and never committed.
+- All sample health data in the MCP server is synthetic and explicitly labeled as fictitious.
+- No secrets or credentials are committed — `mcp.json.example` uses placeholders only.
 
 ---
 

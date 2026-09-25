@@ -21,6 +21,8 @@ node_modules/
 # Build outputs
 dist/
 build/
+*.tsbuildinfo
+next-env.d.ts
 
 # Sistema operativo
 .DS_Store

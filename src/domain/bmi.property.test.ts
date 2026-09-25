@@ -23,10 +23,10 @@ import { calculateBMI, type BMICategory } from './bmi';
 // ---------------------------------------------------------------------------
 
 /** Peso válido según RF-02: (0, 700] kg */
-const validWeight = () => fc.float({ min: 0.1, max: 700, noNaN: true });
+const validWeight = () => fc.double({ min: 0.1, max: 700, noNaN: true });
 
 /** Altura válida según el modelo: (0, 300] cm — rango humano razonable */
-const validHeight = () => fc.float({ min: 1, max: 300, noNaN: true });
+const validHeight = () => fc.double({ min: 1, max: 300, noNaN: true });
 
 /** Par (weightKg, heightCm) siempre válido */
 const validPair = () =>
@@ -118,8 +118,8 @@ describe('Invariante: monotonía respecto al peso', () => {
     fc.assert(
       fc.property(
         validHeight(),
-        fc.float({ min: 0.1, max: 349.9, noNaN: true }),
-        fc.float({ min: 350, max: 700, noNaN: true }),
+        fc.double({ min: 0.1, max: 349.9, noNaN: true }),
+        fc.double({ min: 350, max: 700, noNaN: true }),
         (heightCm, lightWeight, heavyWeight) => {
           const { value: bmiLight } = calculateBMI(lightWeight, heightCm);
           const { value: bmiHeavy } = calculateBMI(heavyWeight, heightCm);
@@ -139,8 +139,8 @@ describe('Invariante: monotonía respecto a la altura', () => {
     fc.assert(
       fc.property(
         validWeight(),
-        fc.float({ min: 1, max: 149, noNaN: true }),
-        fc.float({ min: 150, max: 300, noNaN: true }),
+        fc.double({ min: 1, max: 149, noNaN: true }),
+        fc.double({ min: 150, max: 300, noNaN: true }),
         (weightKg, shortHeight, tallHeight) => {
           const { value: bmiShort } = calculateBMI(weightKg, shortHeight);
           const { value: bmiTall } = calculateBMI(weightKg, tallHeight);
@@ -169,8 +169,8 @@ describe('Invariante: clasificación WHO (RF-04)', () => {
     // Genera pares cuyo IMC de referencia caiga en < 18.5
     fc.assert(
       fc.property(
-        fc.float({ min: 1, max: 300, noNaN: true }),  // heightCm
-        fc.float({ min: 0.001, max: 1, noNaN: true }), // factor < 1 para forzar bajo IMC
+        fc.double({ min: 1, max: 300, noNaN: true }),  // heightCm
+        fc.double({ min: 0.001, max: 1, noNaN: true }), // factor < 1 para forzar bajo IMC
         (heightCm, factor) => {
           // weight tal que IMC exacto = 18.4 * factor  → siempre < 18.5
           const targetBMI = 18.49 * factor; // estrictamente < 18.5
@@ -188,8 +188,8 @@ describe('Invariante: clasificación WHO (RF-04)', () => {
   it('todos los valores ≥ 30.0 se clasifican como obese', () => {
     fc.assert(
       fc.property(
-        fc.float({ min: 1, max: 300, noNaN: true }),
-        fc.float({ min: 1, max: 10, noNaN: true }), // multiplicador ≥ 1 para empujar IMC alto
+        fc.double({ min: 1, max: 300, noNaN: true }),
+        fc.double({ min: 1, max: 10, noNaN: true }), // multiplicador ≥ 1 para empujar IMC alto
         (heightCm, multiplier) => {
           const targetBMI = 30.0 * multiplier; // siempre ≥ 30
           const heightM = heightCm / 100;
@@ -216,7 +216,7 @@ describe('Invariante: escala cuadrática de la altura', () => {
     fc.assert(
       fc.property(
         validPair(),
-        fc.float({ min: 0.5, max: 2.0, noNaN: true }), // factor de escala k
+        fc.double({ min: 0.5, max: 2.0, noNaN: true }), // factor de escala k
         ({ weightKg, heightCm }, k) => {
           const scaledWeight = weightKg * k * k;
           const scaledHeight = heightCm * k;
@@ -242,7 +242,7 @@ describe('Invariante: rechazo de entradas inválidas', () => {
       fc.property(
         fc.oneof(
           fc.constant(0),
-          fc.float({ min: -1e6, max: -Number.EPSILON, noNaN: true }),
+          fc.double({ min: -1e6, max: -Number.EPSILON, noNaN: true }),
         ),
         validHeight(),
         (badWeight, heightCm) => {
@@ -258,7 +258,7 @@ describe('Invariante: rechazo de entradas inválidas', () => {
         validWeight(),
         fc.oneof(
           fc.constant(0),
-          fc.float({ min: -1e6, max: -Number.EPSILON, noNaN: true }),
+          fc.double({ min: -1e6, max: -Number.EPSILON, noNaN: true }),
         ),
         (weightKg, badHeight) => {
           expect(() => calculateBMI(weightKg, badHeight)).toThrow(RangeError);

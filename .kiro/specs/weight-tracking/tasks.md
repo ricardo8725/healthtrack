@@ -7,20 +7,20 @@
 
 ## Fase 0 — Scaffolding del proyecto
 
-- [ ] **T-00** Crear el proyecto Next.js con App Router y Tailwind CSS.
+- [x] **T-00** Crear el proyecto Next.js con App Router y Tailwind CSS.
   ```bash
   npx create-next-app@latest healthtrack \
     --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
   ```
 
-- [ ] **T-01** Instalar dependencias de base de datos, ORM y validación.
+- [x] **T-01** Instalar dependencias de base de datos, ORM y validación.
   ```bash
   npm install better-sqlite3 drizzle-orm
   npm install -D drizzle-kit @types/better-sqlite3
   npm install zod react-hook-form @hookform/resolvers
   ```
 
-- [ ] **T-02** Instalar y configurar Vitest y fast-check.
+- [x] **T-02** Instalar y configurar Vitest y fast-check.
   ```bash
   npm install -D vitest @vitejs/plugin-react fast-check
   ```
@@ -36,7 +36,7 @@
   "scripts": { "test": "vitest --run" }
   ```
 
-- [ ] **T-03** Configurar Drizzle.
+- [x] **T-03** Configurar Drizzle.
   Crear `drizzle.config.ts`:
   ```ts
   import type { Config } from 'drizzle-kit';
@@ -60,10 +60,10 @@
 
 ## Fase 1 — Base de datos y dominio
 
-- [ ] **T-04** Crear `src/db/schema.ts` con las tablas `user_profile` y `weight_entry`.
+- [x] **T-04** Crear `src/db/schema.ts` con las tablas `user_profile` y `weight_entry`.
   _Ver sección "Esquema de base de datos" en design.md._
 
-- [ ] **T-05** Crear `src/db/index.ts` — instancia singleton de `better-sqlite3`.
+- [x] **T-05** Crear `src/db/index.ts` — instancia singleton de `better-sqlite3`.
   ```ts
   import Database from 'better-sqlite3';
   import { drizzle } from 'drizzle-orm/better-sqlite3';
@@ -73,18 +73,18 @@
   export const db = drizzle(sqlite, { schema });
   ```
 
-- [ ] **T-06** Generar y aplicar la migración inicial.
+- [x] **T-06** Generar y aplicar la migración inicial.
   ```bash
   npm run db:generate
   npm run db:migrate
   ```
 
-- [ ] **T-07** Crear `src/lib/constants.ts` con `FIXED_USER_ID = 'local-user'`.
+- [x] **T-07** Crear `src/lib/constants.ts` con `FIXED_USER_ID = 'local-user'`.
 
-- [ ] **T-08** Crear `src/domain/bmi.ts` con `calculateBMI(weightKg, heightCm)` y `classifyBMI`.
+- [x] **T-08** Crear `src/domain/bmi.ts` con `calculateBMI(weightKg, heightCm)` y `classifyBMI`.
   _Ver implementación completa en design.md._
 
-- [ ] **T-09** Escribir `src/domain/bmi.test.ts` con Vitest (tests unitarios de casos concretos).
+- [x] **T-09** Escribir `src/domain/bmi.test.ts` con Vitest (tests unitarios de casos concretos).
   Casos a cubrir:
   - Resultado correcto para una persona de 70 kg / 175 cm → IMC 22.86, `'normal'`.
   - Límite inferior de `'underweight'`: IMC < 18.5.
@@ -112,17 +112,17 @@
 
 ## Fase 2 — Validación y repositorios
 
-- [ ] **T-10** Crear `src/schemas/profile.schema.ts` con `profileSchema` (Zod).
+- [x] **T-10** Crear `src/schemas/profile.schema.ts` con `profileSchema` (Zod).
   _Ver sección "Validación con Zod" en design.md._
 
-- [ ] **T-11** Crear `src/schemas/weight.schema.ts` con `weightEntrySchema` (Zod).
+- [x] **T-11** Crear `src/schemas/weight.schema.ts` con `weightEntrySchema` (Zod).
 
-- [ ] **T-12** Crear `src/lib/profile.repository.ts`.
+- [x] **T-12** Crear `src/lib/profile.repository.ts`.
   Exportar:
   - `getProfile(userId: string): Promise<UserProfile | null>`
   - `upsertProfile(userId: string, data: ProfileInput): Promise<UserProfile>`
 
-- [ ] **T-13** Crear `src/lib/weight.repository.ts`.
+- [x] **T-13** Crear `src/lib/weight.repository.ts`.
   Exportar:
   - `listWeightEntries(userId: string): Promise<WeightEntry[]>` — orden `date DESC`
   - `getWeightEntry(id: string, userId: string): Promise<WeightEntry | null>`
@@ -136,15 +136,15 @@
 
 ## Fase 3 — API Routes
 
-- [ ] **T-14** Crear `src/app/api/profile/route.ts`.
+- [x] **T-14** Crear `src/app/api/profile/route.ts`.
   - `GET`: llama `getProfile(FIXED_USER_ID)` → 200 o 404.
   - `PUT`: valida body con `profileSchema`, llama `upsertProfile` → 200.
 
-- [ ] **T-15** Crear `src/app/api/weight/route.ts`.
+- [x] **T-15** Crear `src/app/api/weight/route.ts`.
   - `GET`: llama `listWeightEntries(FIXED_USER_ID)` → 200 con array.
   - `POST`: valida body, obtiene perfil, llama `calculateBMI`, llama `createWeightEntry` → 201. Si no hay perfil → 400 con mensaje `'Complete tu perfil primero'`.
 
-- [ ] **T-16** Crear `src/app/api/weight/[id]/route.ts`.
+- [x] **T-16** Crear `src/app/api/weight/[id]/route.ts`.
   - `PUT`: valida body, obtiene perfil, recalcula BMI, llama `updateWeightEntry`. Si la entrada no pertenece al usuario → 404.
   - `DELETE`: llama `deleteWeightEntry`. Si no existe → 404.
 
@@ -152,20 +152,20 @@
 
 ## Fase 4 — UI (páginas y componentes)
 
-- [ ] **T-17** Crear `src/components/BMICategoryBadge.tsx`.
+- [x] **T-17** Crear `src/components/BMICategoryBadge.tsx`.
   Muestra la categoría con color: azul (bajo peso), verde (normal), amarillo (sobrepeso), rojo (obesidad). Incluye `aria-label` con texto completo para accesibilidad.
 
-- [ ] **T-18** Crear `src/components/ProfileForm.tsx` (Client Component).
+- [x] **T-18** Crear `src/components/ProfileForm.tsx` (Client Component).
   - Campos: `heightCm` (number), `dateOfBirth` (date).
   - Validación en cliente con React Hook Form + `profileSchema`.
   - `onSubmit` → `PUT /api/profile`.
   - Redirige a `/weight` tras guardar.
 
-- [ ] **T-19** Crear `src/app/profile/page.tsx` (Server Component).
+- [x] **T-19** Crear `src/app/profile/page.tsx` (Server Component).
   - Fetch inicial del perfil actual vía `getProfile`.
   - Pasa datos como `defaultValues` a `<ProfileForm>`.
 
-- [ ] **T-20** Crear `src/components/WeightEntryForm.tsx` (Client Component).
+- [x] **T-20** Crear `src/components/WeightEntryForm.tsx` (Client Component).
   - Props: `defaultValues?: WeightEntryInput`, `entryId?: string`.
   - Campos: `date` (default: hoy), `weightKg`.
   - Validación con `weightEntrySchema`.
@@ -173,44 +173,44 @@
   - Muestra preview del IMC calculado en tiempo real con `calculateBMI` en cliente.
   - Redirige a `/weight` tras guardar.
 
-- [ ] **T-21** Crear `src/app/weight/new/page.tsx`.
+- [x] **T-21** Crear `src/app/weight/new/page.tsx`.
   Renderiza `<WeightEntryForm>` en modo creación.
 
-- [ ] **T-22** Crear `src/app/weight/[id]/page.tsx` (Server Component).
+- [x] **T-22** Crear `src/app/weight/[id]/page.tsx` (Server Component).
   - Fetch de la entrada por `id` vía `getWeightEntry`.
   - Pasa `defaultValues` y `entryId` a `<WeightEntryForm>`.
 
-- [ ] **T-23** Crear `src/components/DeleteConfirmDialog.tsx` (Client Component).
+- [x] **T-23** Crear `src/components/DeleteConfirmDialog.tsx` (Client Component).
   - Diálogo modal accesible (`role="dialog"`, `aria-modal`, focus trap básico).
   - Props: `entryId`, `onDeleted` callback.
   - Llama `DELETE /api/weight/[id]` → llama `onDeleted()`.
 
-- [ ] **T-24** Crear `src/components/WeightHistoryTable.tsx`.
+- [x] **T-24** Crear `src/components/WeightHistoryTable.tsx`.
   - Muestra columnas: Fecha · Peso (kg) · IMC · Categoría · Acciones (editar / eliminar).
   - Usa `<BMICategoryBadge>` para la categoría.
   - Incluye `<DeleteConfirmDialog>` por fila.
   - Muestra estado vacío cuando no hay entradas (RF-05).
 
-- [ ] **T-25** Crear `src/app/weight/page.tsx` (Server Component).
+- [x] **T-25** Crear `src/app/weight/page.tsx` (Server Component).
   - Fetch de entradas con `listWeightEntries`.
   - Renderiza `<WeightHistoryTable>` + enlace "Nueva entrada".
   - Si el perfil no está completo → banner que redirige a `/profile`.
 
-- [ ] **T-26** Actualizar `src/app/page.tsx` para hacer redirect a `/weight`.
+- [x] **T-26** Actualizar `src/app/page.tsx` para hacer redirect a `/weight`.
 
 ---
 
 ## Fase 5 — Calidad y pulido
 
-- [ ] **T-27** Revisar que todas las etiquetas de categoría BMI estén en un único archivo de constantes (`src/lib/bmi-labels.ts`) para facilitar i18n futura (RNF-04).
+- [x] **T-27** Revisar que todas las etiquetas de categoría BMI estén en un único archivo de constantes (`src/lib/bmi-labels.ts`) para facilitar i18n futura (RNF-04).
 
-- [ ] **T-28** Seed de 1 000 entradas de prueba y verificación visual de rendimiento del historial (RNF-02).
+- [x] **T-28** Seed de 1 000 entradas de prueba y verificación visual de rendimiento del historial (RNF-02).
   ```bash
   # script: src/scripts/seed.ts
   npx tsx src/scripts/seed.ts
   ```
 
-- [ ] **T-29** Revisión de accesibilidad básica:
+- [x] **T-29** Revisión de accesibilidad básica:
   - Todos los `<input>` tienen `<label>` asociado.
   - `<BMICategoryBadge>` tiene `aria-label`.
   - Diálogo de confirmación tiene `role="dialog"` y `aria-modal="true"`.
